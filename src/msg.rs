@@ -1,5 +1,7 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Uint128};
+
+use crate::state::Asset;
 #[cw_serde]
 pub struct InstantiateMsg {
     pub owner: Addr,
@@ -9,7 +11,7 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub enum ExecuteMsg {
     //DepositNativeToken{},
-    Deposit{amount : Option<Uint128>, token : Option<Addr>},
+    Deposit{assets : Vec<Asset>},
     //WithDrawNativeToken {denom : String},
     WithDraw{token : Option<Addr>, denom : Option<String>},
 }

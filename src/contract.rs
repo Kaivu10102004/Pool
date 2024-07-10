@@ -1,6 +1,6 @@
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg,MigrateMsg};
-use crate::state::{Config, CONFIG,DEPOSIT};
+use crate::state::{Config, CONFIG,DEPOSIT, Asset, AssetInfo};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{Addr,
@@ -9,7 +9,6 @@ use cosmwasm_std::{Addr,
 
 use cw2::{set_contract_version};
 use cw20::{self, Cw20ExecuteMsg};
-use serde::de::Expected;
 
 const CONTRACT_NAME: &str = env!("CARGO_PKG_NAME");
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -40,7 +39,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Deposit{token, amount} => execute_deposit(deps,env,info, token,amount),
+        ExecuteMsg::Deposit{assets} => execute_deposit(deps,env,info, assets),
         ExecuteMsg::WithDraw{denom, token} => execute_with_draw(deps,env,info,token,denom),
     }
 }
@@ -49,77 +48,48 @@ pub fn execute_deposit(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    token : Option<Addr>,
-    amount : Option<Uint128>,
+    assets : Vec<Asset>,
 ) -> Result<Response, ContractError>{
-    if info.funds.len() != 0 {
-        let coin = &info.funds[0];
-        //let config = CONFIG.load(deps.storage)?; 
-        let deposit_native_token_info = DEPOSIT.may_load(deps.storage,(info.sender.clone(),coin.denom.clone()))?;
-        match deposit_native_token_info {
-            Some(total_token_amount) => { 
-                DEPOSIT.save(deps.storage, (info.sender.clone(),coin.denom.clone()), &(total_token_amount.clone() + coin.amount.clone()))?;
-            }
-            None => {
-                DEPOSIT.save(deps.storage, (info.sender.clone(),coin.denom.clone()), &coin.amount.clone())?;
-            }
-        }
-    }
-    if token.is_some() {
-        let token = token.expect("Not found token address");
-        let amount = amount.expect("Not found amount");
-        let deposit_token_info = DEPOSIT.may_load(deps.storage,(info.sender.clone(),token.to_string().clone()))?;
-        match deposit_token_info {
-            Some(total_token_amount) => { 
-                DEPOSIT.save(deps.storage, (info.sender.clone(),token.to_string().clone()), &(total_token_amount.clone() + amount.clone()))?;
-            }
-            None => {
-                DEPOSIT.save(deps.storage, (info.sender.clone(),token.to_string().clone()), &amount.clone())?;
+    for asset in assets {
+        match asset.info {
+            AssetInfo::Token{contract_addr} => {
+                let deposit_token_info = DEPOSIT.may_load(deps.storage,(info.sender.clone(),contract_addr.to_string()))?;
+                match deposit_token_info {
+                    Some(total_token_amount) => { 
+                        DEPOSIT.save(deps.storage, (info.sender.clone(),contract_addr.to_string()), &(total_token_amount.clone() + &asset.amount.clone()))?;
+                    }
+                    None => {
+                        DEPOSIT.save(deps.storage, (info.sender.clone(),contract_addr.to_string().clone()), &asset.amount.clone())?;
+                        }
                 }
+                let transfer_msg = WasmMsg::Execute {
+                    contract_addr: contract_addr.to_string(),
+                    msg: to_json_binary(&Cw20ExecuteMsg::TransferFrom {
+                        owner : info.sender.clone().to_string(),
+                        recipient: env.contract.address.to_string(),
+                        amount: asset.amount,
+                    })?,
+                    funds: vec![],
+                };
+                //Ok(Response::default().add_message(transfer_msg))
+            }
+            AssetInfo::NativeToken { denom } => {
+                let deposit_token_info = DEPOSIT.may_load(deps.storage,(info.sender.clone(),denom.clone()))?;
+                match deposit_token_info {
+                    Some(total_token_amount) => { 
+                        DEPOSIT.save(deps.storage, (info.sender.clone(),denom), &(total_token_amount.clone() + asset.amount.clone()))?;
+                    }
+                    None => {
+                        DEPOSIT.save(deps.storage, (info.sender.clone(),denom), &asset.amount.clone())?;
+                    }
+                }
+            }
         }
-        let transfer_msg = WasmMsg::Execute {
-            contract_addr: token.to_string().clone(),
-            msg: to_json_binary(&Cw20ExecuteMsg::TransferFrom {
-                owner : info.sender.clone().to_string(),
-                recipient: env.contract.address.to_string(),
-                amount: Uint128::from(amount.clone()),
-            })?,
-            funds: vec![],
-        };
-        Ok(Response::default().add_message(transfer_msg))
     }
-    else {
-        Ok(Response::default())
-    }
+    
+    Ok(Response::default())
 }
 
-// pub fn execute_deposit(
-//     deps: DepsMut,
-//     env: Env,
-//     info: MessageInfo,
-//     amount : Option<Uint128>,
-// ) -> Result<Response, ContractError>{
-//     let config = CONFIG.load(deps.storage)?; 
-//     let deposit_token_info = DEPOSIT.may_load(deps.storage,info.sender.clone())?;
-//     match deposit_token_info {
-//         Some(total_token_amount) => { 
-//             DEPOSIT.save(deps.storage, info.sender.clone(), &(total_token_amount.clone() + amount.clone()))?;
-//         }
-//         None => {
-//             DEPOSIT.save(deps.storage, info.sender.clone(), &amount.clone())?;
-//         }
-//     }
-//     let transfer_msg = WasmMsg::Execute {
-//                 contract_addr: config.deposit_token.clone().to_string(),
-//                 msg: to_json_binary(&Cw20ExecuteMsg::TransferFrom {
-//                     owner : info.sender.clone().to_string(),
-//                     recipient: env.contract.address.to_string(),
-//                     amount: Uint128::from(amount.clone()),
-//                 })?,
-//                 funds: vec![]Coin,
-//             };
-//     Ok(Response::default().add_message(transfer_msg))
-// }
 
 pub fn execute_with_draw(
     deps: DepsMut,
@@ -128,7 +98,6 @@ pub fn execute_with_draw(
     token : Option<Addr>,
     denom : Option<String>,
 ) -> Result<Response, ContractError>{
-    //let config = CONFIG.load(deps.storage)?; 
     if denom.is_some() {
         let denom = denom.expect("Not found denom");
         let with_draw_native_token_info = DEPOSIT.may_load(deps.storage,(info.sender.clone(),denom.clone()))?;

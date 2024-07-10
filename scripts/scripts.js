@@ -2,6 +2,8 @@ import 'dotenv/config'
 import { SigningCosmWasmClient, Secp256k1HdWallet } from "cosmwasm"
 import * as fs from "fs";
 import { Decimal } from "@cosmjs/math";
+import { AssertionError } from 'assert';
+import { assert } from 'console';
 //import { Coin } from "coin";
 // This is your rpc endpoint
 const rpcEndpoint = "https://testnet-rpc.orai.io"
@@ -42,10 +44,10 @@ async function main() {
     console.log(upload)
 
     
-    const instantiate_msg = {
-        owner: address,
-        //deposit_token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
-    };
+    // const instantiate_msg = {
+    //     owner: address,
+    //     //deposit_token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
+    // };
     // const InstantiateOptions ={
     //     admin : "orai15d8rnqeywwy6c0vkj3fyd8lw6tudfrzgkh2yrx",
     // }
@@ -68,35 +70,45 @@ async function main() {
 //     }
 //     const query_example = await client.queryContractSmart(contract_address,query_msg)
 //     console.log(query_example)
-
-    // const execute_msg = {   
-    //     // deposit : {
-    //     //     //token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
-    //     //     //amount : "100",
-    //     //     //denom: "orai",
-    //     // }
-    //     with_draw : {
-    //         //token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
-    //     }
-    //     // deposit_native_token :{
-    //     // }
-    //     // with_draw_native_token : {
-    //     //     denom : "orai",
-    //     // }
-    // } 
-    // //const execute_example = await client.execute(address, contract_address, execute_msg,fee,'',[{ denom: "orai", amount: "1" }]);
-    // const execute_example = await client.execute(address, contract_address, execute_msg,fee);
-    // console.log(execute_example)
-
-    const query_msg1 = {
-        // native_token_info :{
-        //     user : "orai15d8rnqeywwy6c0vkj3fyd8lw6tudfrzgkh2yrx",
+    let arr = [
+        {
+            info : {
+                // token : {
+                //     contract_addr : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
+                // }
+                native_token : {
+                    denom : "orai",
+                }
+            },
+            amount : "1",
+        }
+    ];
+    const execute_msg = {   
+        deposit:{
+            assets : arr,
+        }
+        // with_draw : {
+        //     //token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
+        // }
+        // deposit_native_token :{
+        // }
+        // with_draw_native_token : {
         //     denom : "orai",
         // }
-        token_info :{
+    } 
+    const execute_example = await client.execute(address, contract_address, execute_msg,fee,'',[{ denom: "orai", amount: "1" }]);
+    //const execute_example = await client.execute(address, contract_address, execute_msg,fee);
+    console.log(execute_example)
+
+    const query_msg1 = {
+        native_token_info :{
             user : "orai15d8rnqeywwy6c0vkj3fyd8lw6tudfrzgkh2yrx",
-            token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
+            denom : "orai",
         }
+        // token_info :{
+        //     user : "orai15d8rnqeywwy6c0vkj3fyd8lw6tudfrzgkh2yrx",
+        //     token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
+        // }
     } 
     const query_example1 = await client.queryContractSmart(contract_address,query_msg1)
     console.log(query_example1)
