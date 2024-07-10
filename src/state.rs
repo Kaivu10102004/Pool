@@ -5,10 +5,18 @@ use cw_storage_plus::{Item, Map};
 #[cw_serde]
 pub struct Config {
     pub owner: Addr,
-    pub deposit_token : Addr,
+    //pub deposit_token : Addr,
 }
 
+// pub struct Asset {
+//     pub info: AssetInfo,
+//     pub amount: Uint128,
+// }
+// pub enum AssetInfo {
+//     Token { contract_addr: Addr },
+//     NativeToken { denom: String },
+// }
+
 pub const CONFIG: Item<Config> = Item::new("config");
-pub const DEPOSIT_NATIVE_TOKEN : Map<Addr,Uint128> = Map::new("deposit_native_token");
-pub const DEPOSIT_TOKEN : Map<Addr,Uint128> = Map::new("deposit_token");
+pub const DEPOSIT : Map<(Addr,String),Uint128> = Map::new("deposit");
 
