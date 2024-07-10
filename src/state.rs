@@ -19,4 +19,3 @@ pub struct Config {
 
 pub const CONFIG: Item<Config> = Item::new("config");
 pub const DEPOSIT : Map<(Addr,String),Uint128> = Map::new("deposit");
-

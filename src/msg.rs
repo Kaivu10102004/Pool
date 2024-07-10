@@ -9,9 +9,9 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub enum ExecuteMsg {
     //DepositNativeToken{},
-    Deposit{amount : Uint128, token : Addr},
-    WithDrawNativeToken {denom : String},
-    WithDrawToken{token : Addr},
+    Deposit{amount : Option<Uint128>, token : Option<Addr>},
+    //WithDrawNativeToken {denom : String},
+    WithDraw{token : Option<Addr>, denom : Option<String>},
 }
 
 #[cw_serde]

@@ -15,5 +15,5 @@
 *.iml
 .idea
 
-.env 
+*.env 
 node_modules/

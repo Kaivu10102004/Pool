@@ -54,7 +54,7 @@ async function main() {
     
 
     // const migrate_msg = {
-    //         migrate:{}
+    //         //migrate:{}
     //         //staker_info :{user : "orai15d8rnqeywwy6c0vkj3fyd8lw6tudfrzgkh2yrx"}
     //         //get_rewardamount :{staker : "orai15d8rnqeywwy6c0vkj3fyd8lw6tudfrzgkh2yrx"}
     // } 
@@ -69,33 +69,34 @@ async function main() {
 //     const query_example = await client.queryContractSmart(contract_address,query_msg)
 //     console.log(query_example)
 
-    const execute_msg = {   
-        // deposit : {
-        //     token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
-        //     amount : "100",
-        // }
-        // with_draw_token : {
-        //     token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
-        // }
-        // deposit_native_token :{
-        // }
-        with_draw_native_token : {
-            denom : "orai",
-        }
-    } 
-     //const execute_example = await client.execute(address, contract_address, execute_msg,fee,'',[{ denom: "orai", amount: "1" }]);
-   const execute_example = await client.execute(address, contract_address, execute_msg,fee);
-     console.log(execute_example)
+    // const execute_msg = {   
+    //     // deposit : {
+    //     //     //token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
+    //     //     //amount : "100",
+    //     //     //denom: "orai",
+    //     // }
+    //     with_draw : {
+    //         //token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
+    //     }
+    //     // deposit_native_token :{
+    //     // }
+    //     // with_draw_native_token : {
+    //     //     denom : "orai",
+    //     // }
+    // } 
+    // //const execute_example = await client.execute(address, contract_address, execute_msg,fee,'',[{ denom: "orai", amount: "1" }]);
+    // const execute_example = await client.execute(address, contract_address, execute_msg,fee);
+    // console.log(execute_example)
 
-     const query_msg1 = {
-        native_token_info :{
-            user : "orai15d8rnqeywwy6c0vkj3fyd8lw6tudfrzgkh2yrx",
-            denom : "orai",
-        }
-        // token_info :{
+    const query_msg1 = {
+        // native_token_info :{
         //     user : "orai15d8rnqeywwy6c0vkj3fyd8lw6tudfrzgkh2yrx",
-        //     token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
+        //     denom : "orai",
         // }
+        token_info :{
+            user : "orai15d8rnqeywwy6c0vkj3fyd8lw6tudfrzgkh2yrx",
+            token : "orai1u356paa3dhadknurayc0dyf8x7k5cdsr6trvcmxe2a5eyyc6yufqutkp65",
+        }
     } 
     const query_example1 = await client.queryContractSmart(contract_address,query_msg1)
     console.log(query_example1)
